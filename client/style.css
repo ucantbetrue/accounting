@@ -1,0 +1,101 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.buttons {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.form-container {
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+input, textarea {
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin-bottom: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+textarea {
+    resize: vertical;
+}
+
+button[type="submit"] {
+    background-color: #28a745;
+}
+
+button[type="submit"]:hover {
+    background-color: #218838;
+}
+
+.transaction-list {
+    margin-top: 20px;
+}
+
+.transaction-table-container {
+    max-height: 300px; /* Обмеження висоти контейнера */
+    overflow-y: auto; /* Додавання вертикальної прокрутки */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.transaction-list table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.transaction-list th, .transaction-list td {
+    padding: 10px;
+    border: 1px solid #ccc;
+    text-align: left;
+}
+
+.transaction-list th {
+    background-color: #f1f1f1;
+}
+
+.transaction-list td a {
+    margin-right: 10px;
+    text-decoration: none;
+    color: #007bff;
+}
+
+.transaction-list td a:hover {
+    text-decoration: underline;
+}

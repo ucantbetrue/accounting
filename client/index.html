@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Домашня Бухгалтерія</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+    <div class="buttons">
+        <button onclick="showForm('incomeForm', 'income')">НАДХОДЖЕННЯ</button>
+        <button onclick="showForm('expenseForm', 'expense')">ВИТРАТИ</button>
+    </div>
+    <div id="incomeForm" class="form-container" style="display:none;">
+        <h2>Надходження</h2>
+        <form id="incomeFormElement">
+            <input type="hidden" name="type" value="income">
+            <div class="form-group">
+                <label for="amount">Сума:</label>
+                <input type="number" name="amount" required>
+            </div>
+            <div class="form-group">
+                <label for="date">Дата:</label>
+                <input type="date" name="date" required>
+            </div>
+            <div class="form-group">
+                <label for="category">Категорія:</label>
+                <input type="text" name="category" required>
+            </div>
+            <div class="form-group">
+                <label for="note">Примітка:</label>
+                <textarea name="note"></textarea>
+            </div>
+            <button type="submit">Додати</button>
+        </form>
+    </div>
+    <div id="expenseForm" class="form-container" style="display:none;">
+        <h2>Витрати</h2>
+        <form id="expenseFormElement">
+            <input type="hidden" name="type" value="expense">
+            <div class="form-group">
+                <label for="amount">Сума:</label>
+                <input type="number" name="amount" required>
+            </div>
+            <div class="form-group">
+                <label for="date">Дата:</label>
+                <input type="date" name="date" required>
+            </div>
+            <div class="form-group">
+                <label for="category">Категорія:</label>
+                <input type="text" name="category" required>
+            </div>
+            <div class="form-group">
+                <label for="note">Примітка:</label>
+                <textarea name="note"></textarea>
+            </div>
+            <button type="submit">Додати</button>
+        </form>
+    </div>
+    <div class="transaction-list">
+        <h2>ІСТОРІЯ ТРАНЗАКЦІЙ</h2>
+        <div class="transaction-table-container">
+            <table>
+                <thead>
+                <tr>
+                    <th>id</th>
+                    <th>Сума</th>
+                    <th>Дата</th>
+                    <th>Категорія</th>
+                    <th>Примітка</th>
+                    <th>Дії</th>
+                </tr>
+                </thead>
+                <tbody id="transactionTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+<!--   модалка запити до відправки редагування PUT http://localhost:8080/api/financial/income/{{incomeId}}-->
+<!--    Content-Type: application/json-->
+
+<!--    {-->
+<!--    "amount": 6650,-->
+<!--    "date": "2023-05-03",-->
+<!--    "category": "fsd",-->
+<!--    "note": "fsd"-->
+<!--    }-->
+
+<!--    ###-->
+<!--    PUT http://localhost:8080/api/financial/expenses/{{expenseId}}-->
+<!--    Content-Type: application/json-->
+
+<!--    {-->
+<!--    "amount": 6650,-->
+<!--    "date": "2023-05-03",-->
+<!--    "category": "fsd",-->
+<!--    "note": "fsd"-->
+<!--    }-->
+<!--    <div id="editModal" class="modal">-->
+<!--        <div class="modal-content">-->
+<!--            <span class="close" onclick="document.getElementById('editModal').style.display = 'none'">&times;</span>-->
+<!--            <form id="editForm" onsubmit="updateTransaction(event, transactionId, type)">-->
+<!--                <input type="hidden" id="transactionId">-->
+<!--                <div class="form-group">-->
+<!--                    <label for="editAmount">Сума:</label>-->
+<!--                    <input type="number" id="editAmount" required>-->
+<!--                </div>-->
+<!--                <div class="form-group">-->
+<!--                    <label for="editDate">Дата:</label>-->
+<!--                    <input type="date" id="editDate" required>-->
+<!--                </div>-->
+<!--                <div class="form-group">-->
+<!--                    <label for="editCategory">Категорія:</label>-->
+<!--                    <input type="text" id="editCategory" required>-->
+<!--                </div>-->
+<!--                <div class="form-group">-->
+<!--                    <label for="editNote">Примітка:</label>-->
+<!--                    <textarea id="editNote"></textarea>-->
+<!--                </div>-->
+<!--                <button type="submit">Оновити</button>-->
+<!--            </form>-->
+<!--        </div>-->
+<!--    </div>-->
+
+</div>
+
+<script>
+    function renderTable(data, type) {
+        const tableBody = document.getElementById('transactionTableBody');
+        tableBody.innerHTML = '';
+
+        data.forEach(transaction => {
+            const dateString = Array.isArray(transaction.date) ? transaction.date.join('-') : transaction.date;
+
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+        <td>${transaction.id != null ? transaction.id : 'N/A'}</td>
+
+        <td>${transaction.amount != null ? transaction.amount : 'N/A'}</td>
+        <td>${dateString != null ? dateString : 'N/A'}</td>
+        <td>${transaction.category != null ? transaction.category : 'N/A'}</td>
+        <td>${transaction.note != null ? transaction.note : 'N/A'}</td>
+        <td>
+
+            ${type === 'income' ? `<button onclick="deleteTransaction(${transaction.id}, 'income')">Видалити доход</button>` : ''}
+            ${type === 'expense' ? `<button onclick="deleteTransaction(${transaction.id}, 'expense')">Видалити витрату</button>` : ''}
+        </td>
+    `;
+            tableBody.appendChild(row);
+        });
+    }
+
+
+    function showForm(formId, type) {
+        document.getElementById('incomeForm').style.display = 'none';
+        document.getElementById('expenseForm').style.display = 'none';
+        document.getElementById(formId).style.display = 'block';
+
+        const endpoint = type === 'income'
+            ? 'http://localhost:8080/api/financial/income-all'
+            : 'http://localhost:8080/api/financial/expense-all';
+
+        fetch(endpoint)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                renderTable(data, type);
+            })
+            .catch(error => console.error('Помилка при отриманні даних:', error));
+    }
+    function addTransaction(event, formId) {
+        event.preventDefault();
+
+        const form = document.getElementById(formId);
+        const formData = new FormData(form);
+        const jsonData = {};
+        formData.forEach((value, key) => {
+            jsonData[key] = value;
+        });
+
+        const endpoint = formId === 'incomeFormElement'
+            ? 'http://localhost:8080/api/financial/income'
+            : 'http://localhost:8080/api/financial/expenses';
+
+        fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(jsonData)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                showForm(formId === 'incomeFormElement' ? 'incomeForm' : 'expenseForm');
+            })
+            .catch(error => console.error('Помилка при додаванні транзакції:', error));
+    }
+
+
+    function deleteTransaction(transactionId, type) {
+        let endpoint;
+        if (type === 'income') {
+            endpoint = `http://localhost:8080/api/financial/income/${transactionId}`;
+        } else if (type === 'expense') {
+            endpoint = `http://localhost:8080/api/financial/expenses/${transactionId}`;
+        } else {
+            console.error('Непідтримуваний тип транзакції:', type);
+            return;
+        }
+
+        fetch(endpoint, {
+            method: 'DELETE'
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const row = document.getElementById(`transaction-${transactionId}`);
+                if (row) {
+                    row.remove();
+                } else {
+                    console.warn('Row not found for transaction:', transactionId);
+                }
+                showForm(type === 'income' ? 'incomeForm' : 'expenseForm');
+            })
+            .catch(error => console.error('Помилка при видаленні транзакції:', error));
+    }
+
+    document.getElementById('incomeFormElement').addEventListener('submit', event => addTransaction(event, 'incomeFormElement'));
+    document.getElementById('expenseFormElement').addEventListener('submit', event => addTransaction(event, 'expenseFormElement'));
+
+</script>
+
+</body>
+</html>
+
